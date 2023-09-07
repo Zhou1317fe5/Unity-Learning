@@ -58,6 +58,8 @@
   <ItemGroup>
     <Compile Include="Assets\PlayerController.cs" />
     <Compile Include="Assets\ArrowController.cs" />
+    <Compile Include="Assets\ArrowGenerator.cs" />
+    <Compile Include="Assets\GameDirector.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="UnityEngine">
