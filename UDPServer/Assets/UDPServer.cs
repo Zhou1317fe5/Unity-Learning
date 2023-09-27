@@ -20,7 +20,19 @@ public class UDPServer : MonoBehaviour
 
 
     //输入框
-    public InputField thisField;
+    public InputField sendMessage;
+    //显示接收到的文本
+    public Text displayText;
+    //显示本机IP
+    public Text displayselfAddress;
+    // 获取用户在输入框中输入的oppositeIP
+    public InputField InputoppositeIP;
+    // 获取用户在输入框中输入的oppositePort
+    public InputField InputoppositePort;
+    // 获取用户在输入框中输入的selfConnectPoint
+    public InputField InputselfConnectPoint;
+
+
 
 
     //定义客户端通信插口
@@ -28,7 +40,7 @@ public class UDPServer : MonoBehaviour
     [Header("---------------------客户端--------------------")]
     public string biji = "可以在这里写笔记";
     [Header("存放对方的接收ip")]
-    public string oppositeIP = "192.168.43.4";
+    public string oppositeIP = "192.168.43.5";
     [Header("存放对方的接收端口")]
     public int oppositePort = 8888;
     //对方服务端ip端口对
@@ -66,6 +78,14 @@ public class UDPServer : MonoBehaviour
     void Start()
     {
 
+        // 将 oppositeIP 的初始值赋值给 InputField 组件(inputoppositeIP)
+        InputoppositeIP.text = oppositeIP;
+        // 将 oppositePort 的初始值赋值给 InputField 组件(InputoppositePort)
+        InputoppositePort.text = oppositePort.ToString();
+        // 将 selfConnectPoint 的初始值赋值给 InputField 组件(InputselfConnectPoint)
+        InputselfConnectPoint.text= selfConnectPoint.ToString();
+
+
         //去除ip 前后空格
         oppositeIP = oppositeIP.Trim();
         //定义本机服务器的ip和端口对
@@ -77,6 +97,9 @@ public class UDPServer : MonoBehaviour
         GetBroadcastIP(selfAddress);
         //初始化
         InitSocket();
+
+        // 显示本机IP
+        displayselfAddress.text = selfAddress;
     }
     void InitSocket()
     {
@@ -94,13 +117,11 @@ public class UDPServer : MonoBehaviour
         connectThread = new Thread(new ThreadStart(SocketReceive));
         connectThread.Start();
 
-
         //给目标服务端发送数据测试  
-        SocketSendDefault(selfListenEnd.ToString() + ":first");
+        SocketSendDefault(selfAddress.ToString() + ":connected");
+        //SocketSendDefault(selfListenEnd.ToString() + ":first");
         print("对方接到表示连接成功");
     }
-
-
 
 
     //本机服务器监听
@@ -128,12 +149,11 @@ public class UDPServer : MonoBehaviour
     }
     public void ToSendString()
     {
-        if (thisField.text != "")
+        if (sendMessage.text != "")
         {
-            SocketSendDefault(thisField.text);
+            SocketSendDefault(sendMessage.text);
         }
     }
-
 
     //自定义ip端口发送
     public void SocketSendCustom(string sendStr, string ip, int port)
@@ -147,15 +167,12 @@ public class UDPServer : MonoBehaviour
         aimIpEnd = new IPEndPoint(IPAddress.Parse(ip), port);
         //发送给指定服务端
         socket_c.SendTo(sendData, sendData.Length, SocketFlags.None, aimIpEnd);
-
     }
 
     //默认ip端口群发
     public void SendToAllDefault(string sendMsg)
     {
         StartCoroutine(SocketBroadcastSend(sendMsg, oppositePort));
-
-
     }
 
     //自定义ip端口群发
@@ -183,8 +200,6 @@ public class UDPServer : MonoBehaviour
     }
 
 
-
-
     //连接关闭
     void SocketQuit()
     {
@@ -201,8 +216,6 @@ public class UDPServer : MonoBehaviour
             socket_s.Close();
 
         StopAllCoroutines();
-
-
     }
     void OnApplicationQuit()
     {
@@ -215,9 +228,28 @@ public class UDPServer : MonoBehaviour
         {
             getNew = false;
             //执行接收文本事件
+            displayText.text = recvStr;
         }
     }
 
+    // 更新IP和端口，重新初始化
+    public void reInit()
+    {
+        //客户端
+        oppositeIP = InputoppositeIP.text;
+        oppositePort = int.Parse(InputoppositePort.text);
+
+        //服务端
+        selfConnectPoint = int.Parse(InputselfConnectPoint.text);
+        //int newOppositePort = int.Parse(InputoppositePort.text);
+        //oppositePort = newOppositePort;
+
+        //关闭连接
+        SocketQuit();
+        // 重新初始化
+        InitSocket();
+
+    }
 
 
     public static string GetLocalIP()
@@ -244,9 +276,7 @@ public class UDPServer : MonoBehaviour
             Debug.Log("ipGetFailed");
             return ("ipGetFailed");
         }
-
     }
-
 
     public void GetBroadcastIP(string ip)
     {
@@ -257,8 +287,6 @@ public class UDPServer : MonoBehaviour
 
             allIPv4.Add(head + i.ToString());
         }
-
-
     }
 
     //public static bool IsCorrectIP(string ip)
@@ -266,14 +294,9 @@ public class UDPServer : MonoBehaviour
     //    return Regex.IsMatch(ip, @"^((2[0-4]\d|25[0-5]|[01]?\d\d?)\.){3}(2[0-4]\d|25[0-5]|[01]?\d\d?)$");
     //}
 
-
-
     [ContextMenu("测试单发效果")]
     private void SendToOne()
     {
         SocketSendDefault("单发测试成功");
     }
-
-
-
 }
